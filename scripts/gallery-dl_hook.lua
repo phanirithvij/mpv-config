@@ -9,17 +9,9 @@
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
 local mp = require 'mp'
--- local inspect = require 'inspect'
 
 local function exec(args)
-    -- local retx = mp.commandv(args)
-    -- print(args)
     local ret = utils.subprocess({args = args})
-    for k, v in pairs(ret) do
-        print(k .. ",")
-        print(v)
-    end
-    print(dump(ret))
     return ret.status, ret.stdout, ret
 end
 
@@ -52,27 +44,15 @@ mp.add_hook("on_load", 15, function()
         return
     end
     local url = string.gsub(url, "gallery%-dl://", "")
-    -- msg.error(url)
-    local res, val, err = mp.command_native(
-                              {
-            name = "subprocess",
-            args = {"py", "D:\\Projects\\fun\\lua\\py.py", url},
-            capture_stdout = true
-        })
-    local urls = res.stdout
-    local es = res.status
 
-    -- local file = assert(io.popen("bash -c gallery-dl -g " .. url, 'r'))
-    -- local output = file:read('*all')
-    -- file:close()
-    -- print(output)
-    -- print("done subprocess: " .. join(" ", {res, val, err}))
-    local data = mp.commandv("subprocess", "gallery-dl", "-g", url, ">data.tmp")
-    print("Nigga")
+    -- gallery-dl's bug was fixed in https://github.com/mikf/gallery-dl/commit/4bc161ca0fcff27e2f2f1dc4c8ba7e9459b6403c
+    -- only python's subprocess worked before
+    -- So I modified it to call python and call gallery-dl from python's subprocess
+    -- not needed anymore
+    local es, urls, result = exec({
+        "gallery-dl", "-g", url
+    })
 
-    -- local es, urls, result = exec({
-    --     -- "gallery-dl", "-g", url
-    -- })
     if (es < 0) or (urls == nil) or (urls == "") then
         msg.error("failed to get album list.")
     end
