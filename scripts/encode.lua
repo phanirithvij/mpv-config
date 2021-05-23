@@ -50,7 +50,7 @@ function get_output_string(dir, format, input, extension, title, from, to,
     output = string.gsub(output, "$d", seconds_to_time_string(to - from, true))
     output = string.gsub(output, "$x", extension)
     output = string.gsub(output, "$p", profile)
-    if ON_WINDOWS then output = string.gsub(output, ":", "_") end
+    if ON_WINDOWS then output = string.gsub(output, "[/\\|<>?:\"*]", "_") end
     if not string.find(output, "$n") then
         return files[output] and nil or output
     end
@@ -168,18 +168,16 @@ function start_encoding(from, to, settings)
     -t 50.863854166099\ 
     "D:\Videos\ANIME\kiminonawa\kimino_dual_aud-saved2.mkv"
     ]]
-    
+
     -- TODO Don't apply shit
     -- apply some of the video filters currently in the chain
     local filters = {}
-    if settings.preserve_filters then
-        filters = get_video_filters()
-    end
+    if settings.preserve_filters then filters = get_video_filters() end
     if settings.append_filter ~= "" then
         filters[#filters + 1] = settings.append_filter
     end
     if #filters > 0 then
-        append_args({ "-filter:v", table.concat(filters, ",") })
+        append_args({"-filter:v", table.concat(filters, ",")})
     end
 
     -- split the user-passed settings on whitespace
