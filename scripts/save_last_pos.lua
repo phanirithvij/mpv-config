@@ -23,10 +23,11 @@ end
 function round(x) return x >= 0 and math.floor(x + 0.5) or math.ceil(x - 0.5) end
 
 -- https://stackoverflow.com/a/23535333/8608146
+-- https://stackoverflow.com/a/35072122/8608146
 function script_path()
     local str = debug.getinfo(2, "S").source
-    -- local str = debug.getinfo(2, "S").source:sub(2)
-    return str:match("(.*/)")
+    -- return str:match("(.*/)")
+    return str:match("@?(.*[/\\])")
 end
 
 local dir = script_path()
@@ -111,8 +112,10 @@ end
 
 function fetch_rect()
     msg.verbose("Fetching rect...")
-    local ps1_script = utils.join_path(dir, "Get-Client-Rect.ps1")
-    local args = {"powershell", "-File", ps1_script, "" .. utils.getpid()}
+    local ps1_script = utils.join_path(dir, "Get-Client-Rect.ps1"):gsub("/", "\\")
+    msg.verbose(dir, ps1_script)
+    local args = {"powershell", "-File", ps1_script , "" .. utils.getpid()}
+    msg.verbose(dump(args))
     local output = utils.subprocess({args = args, cancellable = false})
     if output.status == 0 then
         local newRect = string.split(output.stdout, ' ')
@@ -228,11 +231,13 @@ function move_up_incr(...)
     print(x, y, width, height)
     print(border_visible)
 
-    local ps1_script = utils.join_path(dir, "Set-Window.ps1")
+    -- local ps1_script = utils.join_path(dir, "Set-Window.ps1")
+    local ps1_script = utils.join_path(dir, "Set-Window.ps1"):gsub("/", "\\")
     local args = {
-        "powershell", "-File", ps1_script, "-ProcessName", "mpv", "-X", "" .. x,
+        "powershell", "-File", ps1_script , "-ProcessName", "mpv", "-X", "" .. x,
         "-Y", "" .. y, "-Width", "" .. width, "-Height", "" .. height
     }
+    msg.verbose(dir, ps1_script, dump(args))
     local output = utils.subprocess({args = args, cancellable = false})
     msg.verbose(dump(output))
     if output.status == 0 then msg.verbose(output.stdout) end
